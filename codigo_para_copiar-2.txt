@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<title>Informática 11no grado</title>
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--tx:#1b2330;--mut:#5d6b82;--pri:#2f6bff;--bd:#dde3ee;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10141c;--card:#1a212d;--tx:#e8edf6;--mut:#9aa8bf;--pri:#6c97ff;--bd:#2b3445}}
+:root[data-theme="dark"]{--bg:#10141c;--card:#1a212d;--tx:#e8edf6;--mut:#9aa8bf;--pri:#6c97ff;--bd:#2b3445}
+*{box-sizing:border-box}html{height:100%}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+header{padding:18px 16px 8px;text-align:center;position:relative;z-index:3}
+h1{margin:0;font-size:1.5rem}
+header p{margin:4px 0 0;color:var(--mut)}
+main{max-width:640px;margin:0 auto;padding:12px 16px 70px;position:relative;z-index:1}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:14px}
+input{width:100%;padding:12px;border:1px solid var(--bd);border-radius:10px;font-size:1rem;background:var(--bg);color:var(--tx);margin:6px 0}
+button{background:var(--pri);color:#fff;border:0;border-radius:10px;padding:12px 16px;font-size:1rem;cursor:pointer}
+button.ghost{background:transparent;color:var(--pri);border:1px solid var(--bd)}
+.search{display:flex;gap:8px;align-items:center}
+.search span{font-size:1.4rem}
+details{border-top:1px solid var(--bd);padding:10px 0}
+summary{font-weight:600;cursor:pointer}
+details p,details ol{color:var(--mut);margin:8px 0 0}
+.tag{display:inline-block;font-size:.75rem;background:var(--bg);border:1px solid var(--bd);border-radius:20px;padding:1px 8px;color:var(--mut);margin-left:6px}
+.hidden{display:none}
+.err{color:#d33;font-size:.9rem;min-height:1.2em}
+table{width:100%;border-collapse:collapse;font-size:.95rem}
+td,th{text-align:left;padding:6px 4px;border-bottom:1px solid var(--bd)}
+.creator{position:fixed;right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));background:var(--pri);color:#fff;padding:6px 12px;border-radius:20px;font-size:.8rem;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.adm{position:fixed;left:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));font-size:.8rem;padding:6px 12px}
+#loader{position:fixed;inset:0;z-index:99;background:var(--bg);display:flex;align-items:center;justify-content:center;animation:fadeout .5s ease 2.2s forwards}
+@keyframes fadeout{to{opacity:0;visibility:hidden;pointer-events:none}}
+.logo{display:grid;grid-template-columns:repeat(2,34px);gap:5px}
+.logo i{width:34px;height:34px;animation:pulse 1s ease-in-out infinite}
+.logo i:nth-child(1){background:#f25022}.logo i:nth-child(2){background:#7fba00;animation-delay:.15s}
+.logo i:nth-child(3){background:#00a4ef;animation-delay:.3s}.logo i:nth-child(4){background:#ffb900;animation-delay:.45s}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.7);opacity:.5}}
+#loader p{margin:18px 0 0;color:var(--mut);text-align:center}
+.sheetwrap{overflow-x:auto}
+body{background-image:linear-gradient(rgba(120,140,200,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(120,140,200,.12) 1px,transparent 1px);background-size:32px 32px;background-attachment:fixed}
+#deco{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+#deco span{position:absolute;color:var(--pri);opacity:.16;font-family:ui-monospace,Menlo,monospace;font-weight:700;animation:flot ease-in-out infinite alternate}
+@keyframes flot{from{transform:translateY(0) rotate(-6deg)}to{transform:translateY(-26px) rotate(6deg)}}
+.menuBtn{position:absolute;right:12px;top:calc(12px + env(safe-area-inset-top,0px));font-size:1.4rem;padding:4px 12px;line-height:1.2}
+#menu{position:absolute;right:12px;top:calc(58px + env(safe-area-inset-top,0px));background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:6px;box-shadow:0 6px 20px rgba(0,0,0,.25);text-align:left;z-index:10}
+#menu button{display:block;width:100%;text-align:left;background:transparent;color:var(--tx);padding:10px 16px;white-space:nowrap}
+.opt{display:block;width:100%;text-align:left;background:var(--bg);color:var(--tx);border:1px solid var(--bd);margin:8px 0}
+.opt.ok{background:#1f9d55;color:#fff;border-color:#1f9d55}
+.opt.mal{background:#d33;color:#fff;border-color:#d33}
+.creator,.adm{z-index:5}
+.bell{position:absolute;left:12px;top:calc(12px + env(safe-area-inset-top,0px));font-size:1.3rem;padding:4px 10px;line-height:1.2}
+#badge{position:absolute;top:-6px;right:-6px;background:#d33;color:#fff;border-radius:10px;font-size:.7rem;padding:1px 6px}
+textarea{width:100%;padding:12px;border:1px solid var(--bd);border-radius:10px;font:inherit;background:var(--bg);color:var(--tx);margin:6px 0;min-height:70px}
+.aviso{border-top:1px solid var(--bd);padding:10px 0}.aviso small{color:var(--mut)}
+.sug{margin:3px 3px 3px 0;font-size:.85rem;padding:6px 10px}
+.av{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:var(--pri);color:#fff;font-weight:700;overflow:hidden;flex:none;vertical-align:middle}
+.av img{width:100%;height:100%;object-fit:cover}
+.rk{display:flex;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--bd)}
+.rk.yo{background:rgba(47,107,255,.12);border-radius:8px;padding-left:6px;padding-right:6px}
+.top1{display:flex;align-items:center;gap:10px;font-weight:600;padding:10px 14px}
+.top1.hidden{display:none}
+table.sheet{border-collapse:collapse;min-width:100%}
+.sheet th{background:var(--bg);text-align:center;padding:6px;border:1px solid var(--bd);color:var(--mut);font-weight:600;font-size:.85rem}
+.sheet td{border:1px solid var(--bd);padding:0}
+.sheet input{margin:0;border:0;border-radius:0;padding:8px 6px;min-width:62px;text-align:right;background:transparent}
+.sheet input:focus{outline:2px solid var(--pri);outline-offset:-2px}
+
+.cats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cat{background:var(--bg);color:var(--tx);border:1px solid var(--bd);padding:16px 8px;font-size:.95rem}
+#adminApp{position:fixed;inset:0;z-index:60;background:var(--bg);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+#adminApp.hidden,#aSheet.hidden,#baneado.hidden{display:none}
+.ahead{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--bd);background:var(--card)}
+.abody{flex:1;overflow-y:auto;padding:14px 16px;max-width:680px;width:100%;margin:0 auto}
+.atabs{display:flex;border-top:1px solid var(--bd);background:var(--card);padding-bottom:env(safe-area-inset-bottom,0px)}
+.atabs button{flex:1;background:transparent;color:var(--mut);border-radius:0;padding:8px 2px;display:flex;flex-direction:column;align-items:center;font-size:1.2rem}
+.atabs button small{font-size:.7rem}.atabs button.on{color:var(--pri);font-weight:700}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px}
+.stat b{display:block;font-size:1.8rem}.stat span{color:var(--mut);font-size:.85rem}
+.mem{display:flex;gap:10px;align-items:center;padding:10px;background:var(--card);border:1px solid var(--bd);border-radius:12px;margin-bottom:8px;cursor:pointer}
+#aSheet{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.5);display:flex;align-items:flex-end}
+.sheet2{background:var(--card);width:100%;max-height:85%;overflow-y:auto;border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px))}
+.sheet2 .act{display:block;width:100%;text-align:left;margin:6px 0;background:var(--bg);color:var(--tx);border:1px solid var(--bd)}
+.sheet2 .act.red{color:#d33;border-color:#d33}
+.feed{padding:10px 0;border-bottom:1px solid var(--bd)}.feed small{color:var(--mut);display:block}
+#baneado{position:fixed;inset:0;z-index:80;background:var(--bg);display:flex;align-items:center;justify-content:center;text-align:center;padding:24px}
+.bvgrid{display:grid;gap:10px;margin:14px 0;text-align:left}
+.bvgrid div{background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:12px}
+.btnlab{position:relative;overflow:hidden;display:inline-block;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:10px;padding:12px 16px;cursor:pointer}
+.btnlab input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;margin:0;padding:0;border:0}
+
+/* ===== Estilo profesional ===== */
+:root{--bg:#f3f6fc;--card:#ffffff;--tx:#132035;--mut:#5b6b85;--pri:#2457e6;--bd:#dbe3f1;--sh:0 6px 20px rgba(20,40,90,.08)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b1020;--card:#141c33;--tx:#e9eefb;--mut:#9fb0cf;--pri:#6b94ff;--bd:#25304f;--sh:0 6px 20px rgba(0,0,0,.35)}}
+:root[data-theme="dark"]{--bg:#0b1020;--card:#141c33;--tx:#e9eefb;--mut:#9fb0cf;--pri:#6b94ff;--bd:#25304f;--sh:0 6px 20px rgba(0,0,0,.35)}
+body{background-color:var(--bg);background-image:radial-gradient(900px 420px at 50% -140px,rgba(36,87,230,.16),transparent 70%),linear-gradient(rgba(120,140,200,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(120,140,200,.07) 1px,transparent 1px);background-size:auto,44px 44px,44px 44px;background-attachment:fixed;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+#deco span{opacity:.07}
+header{padding:28px 16px 12px}
+header::after{content:"";display:block;width:56px;height:4px;border-radius:4px;margin:12px auto 0;background:linear-gradient(90deg,var(--pri),#14b8a6)}
+h1{font-size:1.6rem;letter-spacing:-.02em;font-weight:800}
+header p{font-size:.92rem}
+.card{border-radius:18px;box-shadow:var(--sh);padding:18px}
+h2{letter-spacing:-.01em}
+button{background:linear-gradient(135deg,var(--pri),#1b3fb8);box-shadow:0 3px 10px rgba(36,87,230,.25);font-weight:600;border-radius:12px;transition:transform .12s,opacity .12s}
+button:active{transform:scale(.97)}
+button.ghost,.menuBtn,.bell{box-shadow:none}
+input,textarea{border-radius:12px;padding:13px}
+input:focus,textarea:focus{outline:2px solid var(--pri);outline-offset:0}
+.creator{background:var(--card);color:var(--tx);border:1px solid var(--bd);box-shadow:var(--sh);font-weight:600}
+.adm{background:var(--card);box-shadow:var(--sh)}
+details{padding:12px 0}
+summary{font-size:1rem}
+.tag{background:rgba(36,87,230,.1);border-color:transparent;color:var(--pri)}
+.stat{box-shadow:var(--sh)}
+.top1{background:linear-gradient(90deg,rgba(255,185,0,.16),var(--card));border-color:rgba(255,185,0,.45)}
+</style>
+</head>
+<body>
+<div id="loader"><div><div class="logo"><i></i><i></i><i></i><i></i></div><p>Cargando…</p></div></div>
+<header>
+  <h1>💻 Informática · 11no grado</h1>
+  <p id="hello">Bienvenido al grupo</p>
+  <button class='ghost menuBtn hidden' id='menuBtn' aria-label='Menú'>⋮</button>
+  <button class='ghost bell hidden' id='bellBtn' aria-label='Notificaciones'>🔔<span id='badge' class='hidden'>0</span></button>
+  <div id='menu' class='hidden'>
+    <button data-v='perfil'>👤 Perfil</button>
+    <button data-v='contenido'>📚 Información</button>
+    <button data-v='juegos'>🎮 Juegos</button>
+  </div>
+</header>
+<main>
+  <div id='top1' class='card top1 hidden'></div>
+  <!-- Registro -->
+  <section id="reg" class="card">
+    <h2 style="margin-top:0" id="regTitulo">Crea tu cuenta</h2>
+    <form id="regForm" autocomplete="on">
+    <input id="nom" name="username" placeholder="Tu nombre completo" autocomplete="username">
+    <input id="aula" name="aula" placeholder="Número del aula" autocomplete="off">
+    <input id="pw" name="password" type="password" placeholder="Contraseña (mínimo 4 caracteres)" autocomplete="new-password">
+    <label style='display:block;margin:2px 0 6px;font-size:.9rem'><input type='checkbox' id='verPw' style='width:auto;margin:0 6px 0 0'>Mostrar contraseña</label>
+    <p style="color:var(--mut);font-size:.85rem;margin:0">No uses una contraseña que tengas en otras cuentas.</p>
+    <div class="err" id="regErr"></div>
+    <button id="regBtn" type="submit">Crear cuenta</button>
+    <button class="ghost" id="modo" type="button">Ya tengo cuenta</button>
+    </form>
+  </section>
+
+  <!-- Contenido -->
+  <section id="contenido" class="hidden">
+    <p style="text-align:right;margin:0 0 8px"><button class="ghost" id="salir">Cerrar sesión</button></p>
+    <div class="card search">
+      <span>🔍</span>
+      <input id="q" placeholder="Busca: ej. cómo usar Excel" style="margin:0">
+    </div>
+    <div class="card" id="lista"></div>
+    <div class="card">
+      <h2 style="margin-top:0">📊 Mini hoja de cálculo</h2>
+      <p style="color:var(--mut);margin-top:0">Escribe números o fórmulas como <b>=A1+B1</b>, <b>=SUMA(A1:A3)</b>, <b>=PROMEDIO(B1:B3)</b>, <b>=MAX()</b>, <b>=MIN()</b>.</p>
+      <div class="sheetwrap"><table class="sheet" id="sheet"></table></div>
+      <p><button class="ghost" id="limpiar">Limpiar hoja</button></p>
+    </div>
+  </section>
+
+  <section id='perfil' class='hidden'>
+    <div class='card'><h2 style='margin-top:0'>👤 Mi perfil</h2>
+      <div style='text-align:center;margin-bottom:10px'><div id='pFotoBox'></div><div style='display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:8px'><label class='btnlab'>📷 Tomar foto<input type='file' id='fotoCam' accept='image/*' capture='user'></label><label class='btnlab'>🖼️ Elegir de galería<input type='file' id='fotoIn' accept='image/*'></label></div></div>
+      <p>Nombre: <b id='pNom'></b></p><p>Aula: <b id='pAula'></b></p>
+      <p>Mejor puntuación en el juego: <b id='pBest'></b></p>
+      <p>🔥 Racha: <b id='pRacha'></b></p>
+      <button class='ghost' id='salir2'>Cerrar sesión</button></div>
+  </section>
+  <section id='juegos' class='hidden'>
+    <div class='card'><h2 style='margin-top:0'>🎮 Juego de preguntas</h2><div id='quiz'></div></div>
+    <div class='card'><h2 style='margin-top:0'>🏆 Ranking</h2><p style='color:var(--mut);margin-top:0'>Cada acierto vale 10 puntos. Si haces 10/10, ¡+20 de bonus! Los puntos se acumulan.</p><div id='rank'></div></div>
+  </section>
+
+  <section id='avisos' class='hidden'>
+    <div class='card'><h2 style='margin-top:0'>🔔 Notificaciones</h2><div id='avList'></div><p><button class='ghost' id='avBack'>← Volver</button></p></div>
+  </section>
+
+  <!-- Admin -->
+  <section id="admin" class="hidden">
+    <div class="card">
+      <h2 style="margin-top:0">🔒 Acceso de administrador</h2>
+      <input id="pass" type="password" placeholder="Contraseña">
+      <label style='display:block;margin:2px 0 6px;font-size:.9rem'><input type='checkbox' id='verPass' style='width:auto;margin:0 6px 0 0'>Mostrar contraseña</label>
+      <div class="err" id="passErr"></div>
+      <button id="passBtn">Entrar</button> <button class="ghost" id="back">← Volver</button>
+    </div>
+  </section>
+
+  <section id='bienvenida' class='hidden'>
+    <div class='card' style='text-align:center'>
+      <div style='font-size:3rem'>🎉</div>
+      <h2 id='bvTitulo' style='margin:4px 0'>¡Bienvenido!</h2>
+      <p style='color:var(--mut)'>Ya eres parte de <b>Informática 11no grado</b>. Esto es lo que puedes hacer:</p>
+      <div class='bvgrid'>
+        <div>📚 <b>Aprende</b><br><span style='color:var(--mut)'>Excel, programación, LiveCode y mucho más.</span></div>
+        <div>🎮 <b>Juega</b><br><span style='color:var(--mut)'>Responde 10 preguntas y suma puntos.</span></div>
+        <div>🏆 <b>Compite</b><br><span style='color:var(--mut)'>Sube en el ranking y cuida tu racha 🔥</span></div>
+      </div>
+      <button id='bvBtn'>¡Empezar!</button>
+    </div>
+  </section>
+</main>
+<div id="adminApp" class="hidden">
+  <div class="ahead"><b>⚙️ Panel de administrador</b><button class="ghost" id="aSalir">Salir</button></div>
+  <div class="abody" id="aBody"></div>
+  <nav class="atabs">
+    <button data-t="resumen" class="on">📊<small>Resumen</small></button>
+    <button data-t="actividad">🔔<small>Actividad</small></button>
+    <button data-t="miembros">👥<small>Miembros</small></button>
+    <button data-t="perfil">👤<small>Perfil</small></button>
+  </nav>
+  <div id="aSheet" class="hidden"></div>
+</div>
+<div id='baneado' class='hidden'><div><div style='font-size:3rem'>🚫</div><h2>Acceso suspendido</h2><p style='color:var(--mut)'>El administrador te expulsó de esta página.</p></div></div>
+
+
+<button class="ghost adm" id="admBtn">🔒 Admin</button>
+<div class="creator">Creador: Erick · #13</div>
+
+<script>
+// ===== CONFIGURACIÓN (pega aquí tus datos de Firebase) =====
+const FIREBASE_CONFIG = {
+  apiKey: "PEGA_AQUI",
+  authDomain: "PEGA_AQUI",
+  projectId: "PEGA_AQUI",
+  appId: "PEGA_AQUI"
+};
+const ADMIN_EMAIL = "tucorreo@gmail.com"; // el correo con el que creaste tu usuario administrador en Firebase
+const ADMIN_PASS = "ErickYT"; // solo se usa si NO has configurado Firebase (modo de prueba)
+// ============================================================
+let DBUSER=null,FBA=null;
+const wrapFS=fs=>({collection:n=>({doc:id=>{const r=fs.collection(n).doc(id);return{get:async()=>{const x=await r.get();return{id:x.id,data:()=>x.exists?x.data():undefined}},set:d=>r.set(d),update:d=>r.update(d),delete:()=>r.delete()}},get:async()=>{const q=await fs.collection(n).get();return{forEach:f=>q.forEach(d=>f({id:d.id,data:()=>d.data()}))}}})});
+async function iniciarDB(){
+  if(!window.firebase||String(FIREBASE_CONFIG.apiKey).startsWith("PEGA"))return;
+  const app=firebase.initializeApp(FIREBASE_CONFIG);
+  const c=await app.auth().signInAnonymously();uid=c.user.uid;db=wrapFS(app.firestore());
+  const appA=firebase.initializeApp(FIREBASE_CONFIG,"admin");FBA={auth:appA.auth(),db:wrapFS(appA.firestore())};
+}
+async function loginAdmin(pw){
+  if(FBA){try{await FBA.auth.signInWithEmailAndPassword(ADMIN_EMAIL,pw);DBUSER=db;db=FBA.db;return true}catch(e){return false}}
+  return pw===ADMIN_PASS;
+}
+const TEMAS = [
+ {t:"Cómo usar Microsoft Excel",c:"Excel",k:"excel hoja calculo celdas formulas suma tabla grafico",
+  h:"<ol><li>Cada cuadro se llama celda (ej. A1).</li><li>Escribe = para empezar una fórmula: <b>=SUMA(A1:A5)</b>.</li><li>Otras útiles: PROMEDIO, MAX, MIN, SI.</li><li>Selecciona datos y usa Insertar → Gráfico.</li><li>Arrastra la esquina de la celda para copiar la fórmula.</li></ol>"},
+ {t:"Excel: la pantalla y conceptos básicos",c:"Excel",k:"excel celda fila columna libro hoja rango cinta interfaz",
+  h:"<ul><li><b>Libro</b>: el archivo. <b>Hoja</b>: cada pestaña dentro del libro.</li><li><b>Celda</b>: cruce de columna y fila (B3). <b>Rango</b>: grupo de celdas (A1:C10).</li><li><b>Barra de fórmulas</b>: muestra lo que hay dentro de la celda.</li><li>Tipos de datos: texto, números, fechas, porcentajes y moneda.</li><li>Guardar: Ctrl+G. Formato .xlsx.</li></ul>"},
+ {t:"Excel: operadores y fórmulas simples",c:"Excel",k:"excel formula suma resta multiplicacion division operadores prioridad",
+  h:"<p>Toda fórmula empieza con <b>=</b>. Operadores: + − * / ^ (potencia). Ejemplo: <b>=A1+B1*2</b>.</p><p>Orden: paréntesis, potencias, multiplicar/dividir, sumar/restar. <b>=(A1+B1)*2</b> no da lo mismo que <b>=A1+B1*2</b>.</p>"},
+ {t:"Excel: funciones principales",c:"Excel",k:"excel funciones suma promedio max min contar contara redondear",
+  h:"<ul><li><b>=SUMA(A1:A10)</b> suma un rango.</li><li><b>=PROMEDIO(A1:A10)</b> media.</li><li><b>=MAX()</b> y <b>=MIN()</b> mayor y menor.</li><li><b>=CONTAR()</b> cuenta números; <b>=CONTARA()</b> cuenta celdas con algo.</li><li><b>=REDONDEAR(A1;2)</b> redondea a 2 decimales.</li><li><b>=HOY()</b> fecha actual; <b>=AHORA()</b> fecha y hora.</li></ul><p>Separador: según tu configuración se usa ; o , entre argumentos.</p>"},
+ {t:"Excel: función SI (condicional)",c:"Excel",k:"excel si condicional y o aprobado desaprobado logica",
+  h:"<p><b>=SI(prueba; si_verdadero; si_falso)</b></p><p>Ejemplo: <b>=SI(B2>=60;&quot;Aprobado&quot;;&quot;Suspenso&quot;)</b></p><p>Combinar: <b>=SI(Y(B2>=60;C2>=60);&quot;Pasa&quot;;&quot;No pasa&quot;)</b>. Y = todas ciertas; O = al menos una cierta. SI se puede anidar dentro de otro SI.</p>"},
+ {t:"Excel: CONTAR.SI y SUMAR.SI",c:"Excel",k:"excel contar.si sumar.si promedio.si criterio condicion",
+  h:"<ul><li><b>=CONTAR.SI(A1:A20;&quot;Aprobado&quot;)</b> cuenta cuántas veces aparece.</li><li><b>=SUMAR.SI(A1:A20;&quot;Pan&quot;;B1:B20)</b> suma B donde A sea Pan.</li><li><b>=PROMEDIO.SI()</b> promedia con una condición.</li><li>Criterios numéricos: <b>&quot;&gt;50&quot;</b>, <b>&quot;&lt;=10&quot;</b>.</li></ul>"},
+ {t:"Excel: BUSCARV / BUSCARX",c:"Excel",k:"excel buscarv buscarx vlookup buscar tabla consulta",
+  h:"<p><b>=BUSCARV(valor; tabla; columna; 0)</b> busca un dato en la primera columna de una tabla y devuelve otra columna. El 0 significa coincidencia exacta.</p><p>Ejemplo: buscar el precio de un código: <b>=BUSCARV(A2;Productos!A:C;3;0)</b>. La versión nueva es <b>BUSCARX</b>, más flexible.</p>"},
+ {t:"Excel: referencias relativas y absolutas ($)",c:"Excel",k:"excel referencia absoluta relativa dolar f4 mixta copiar formula",
+  h:"<ul><li><b>Relativa</b> (A1): cambia al copiar la fórmula.</li><li><b>Absoluta</b> ($A$1): no cambia nunca.</li><li><b>Mixta</b> ($A1 o A$1): fija solo columna o solo fila.</li></ul><p>Truco: con la celda en edición, pulsa <b>F4</b> para alternar. Úsala, por ejemplo, para multiplicar muchos precios por un IVA guardado en una sola celda.</p>"},
+ {t:"Excel: ordenar, filtrar y validar datos",c:"Excel",k:"excel ordenar filtrar validacion datos lista desplegable duplicados",
+  h:"<ul><li><b>Ordenar</b>: Datos → Ordenar (A-Z, menor a mayor, por varios criterios).</li><li><b>Filtro</b>: Datos → Filtro; muestra solo las filas que cumplan algo.</li><li><b>Validación</b>: Datos → Validación de datos; permite crear listas desplegables o limitar números.</li><li><b>Quitar duplicados</b>: Datos → Quitar duplicados.</li></ul>"},
+ {t:"Excel: formato condicional",c:"Excel",k:"excel formato condicional colores reglas barras iconos resaltar",
+  h:"<p>Inicio → Formato condicional. Cambia el color de la celda según su valor: resaltar mayores que, barras de datos, escalas de color e iconos. Ideal para ver notas bajas en rojo y altas en verde.</p>"},
+ {t:"Excel: gráficos",c:"Excel",k:"excel grafico graficos barras circular lineas columnas diagrama",
+  h:"<ol><li>Selecciona los datos con sus títulos.</li><li>Insertar → Gráficos.</li><li>Elige: columnas (comparar), líneas (evolución en el tiempo), circular (partes de un total).</li><li>Añade título, etiquetas y leyenda.</li></ol>"},
+ {t:"Excel: tablas dinámicas",c:"Excel",k:"excel tabla dinamica pivot resumen analisis campos",
+  h:"<p>Resumen automático de muchos datos. Insertar → Tabla dinámica. Arrastra campos a <b>Filas</b>, <b>Columnas</b> y <b>Valores</b> (suma, cuenta, promedio). Si cambias los datos originales, actualiza con clic derecho → Actualizar.</p>"},
+ {t:"Excel: errores comunes",c:"Excel",k:"excel errores div/0 ref valor nombre n/a #### problemas",
+  h:"<ul><li><b>#¡DIV/0!</b>: dividiste entre 0 o una celda vacía.</li><li><b>#¡VALOR!</b>: tipo de dato equivocado (texto en una suma).</li><li><b>#¡REF!</b>: borraste una celda a la que apuntaba la fórmula.</li><li><b>#¿NOMBRE?</b>: función mal escrita.</li><li><b>#N/D</b>: BUSCARV no encontró el valor.</li><li><b>####</b>: la columna es muy estrecha; ensánchala.</li></ul>"},
+ {t:"Excel: macros y VBA (programación)",c:"Excel",k:"excel macro vba programacion visual basic codigo grabar alt f11 sub",
+  h:"<p>Una <b>macro</b> automatiza tareas repetidas. Puedes grabarla (Vista → Macros → Grabar macro) o escribirla en <b>VBA</b> (Alt+F11). Guarda el libro como <b>.xlsm</b>.</p><pre style='overflow-x:auto'>Sub Saludo()\n  Dim nombre As String\n  nombre = InputBox(&quot;¿Cómo te llamas?&quot;)\n  If nombre &lt;&gt; &quot;&quot; Then\n    Range(&quot;A1&quot;).Value = &quot;Hola &quot; &amp; nombre\n  End If\nEnd Sub</pre><p>Conceptos: variables (Dim), condicionales (If), bucles (For...Next) y objetos (Range, Cells, Sheets).</p>"},
+ {t:"Excel: atajos de teclado útiles",c:"Excel",k:"excel atajos teclado ctrl rapido shortcuts",
+  h:"<ul><li>Ctrl+C / V / X: copiar, pegar, cortar.</li><li>Ctrl+Z / Y: deshacer / rehacer.</li><li>Ctrl+E: autorrelleno rápido.</li><li>Ctrl+Flechas: saltar al final de los datos.</li><li>Ctrl+Mayús+L: activar filtros.</li><li>F2: editar celda. F4: fijar referencia.</li><li>Alt+= : autosuma.</li></ul>"},
+ {t:"LibreOffice Calc (alternativa gratis a Excel)",c:"Excel",k:"libreoffice calc libre office gratis librecode alternativa hoja calculo ods",
+  h:"<p>Si tu compañero busca algo parecido a Excel pero gratis, es <b>LibreOffice Calc</b>. Casi todas las fórmulas son iguales (SUMA, SI, BUSCARV), abre archivos .xlsx y guarda en .ods. Sus macros usan LibreOffice Basic en vez de VBA.</p>"},
+ {t:"Excel: cómo crear una tabla de datos",c:"Excel",k:"excel tabla datos columnas crear insertar encabezados filas ctrl t estilo",
+  h:"<ol><li>Escribe los <b>encabezados</b> en la fila 1 (Nombre, Edad, Nota…), uno por columna.</li><li>Debajo, escribe los datos: una fila por cada persona o cosa.</li><li>Selecciona todo el rango y pulsa <b>Ctrl+T</b> (o Insertar → Tabla).</li><li>Marca <b>La tabla tiene encabezados</b> y acepta.</li><li>Ya tienes filtros en cada columna, colores alternados y se agranda sola al escribir debajo.</li><li>Dise\u00f1o de tabla → marca <b>Fila de totales</b> para sumar o promediar al final.</li></ol><p>Prueba abajo la mini hoja de c\u00e1lculo para practicar con celdas y f\u00f3rmulas.</p>"},
+ {t:"LiveCode: qué es y cómo instalarlo",c:"LiveCode",k:"livecode live code crear apps aplicaciones programa descargar instalar community gratis",
+  h:"<p><b>LiveCode</b> es un programa para crear tus propias aplicaciones (para PC, celular y web). Armas la pantalla arrastrando botones y campos, y programas con un lenguaje parecido al inglés.</p><ol><li>Entra a <b>livecode.com</b> y ve a Descargas.</li><li>Elige <b>Community</b> (la versión gratis).</li><li>Instálalo en tu computadora y ábrelo.</li><li>Tu proyecto se llama <b>stack</b> y se guarda como archivo .livecode.</li></ol>"},
+ {t:"LiveCode: la pantalla y sus partes",c:"LiveCode",k:"livecode stack card tarjeta objeto boton campo herramientas inspector proyecto editar ejecutar",
+  h:"<ul><li><b>Stack</b>: la ventana de tu aplicación. <b>Card</b>: cada pantalla dentro del stack.</li><li><b>Objetos</b>: botones, campos de texto, imágenes, listas… los arrastras desde la paleta de Herramientas.</li><li><b>Inspector</b>: cambia nombre, color, tamaño y texto del objeto.</li><li><b>Modo Editar</b> (flecha): para mover y diseñar. <b>Modo Ejecutar</b> (dedo): para probar la app.</li><li><b>Project Browser</b>: lista de todos los objetos que has creado.</li></ul>"},
+ {t:"LiveCode: tu primera app paso a paso",c:"LiveCode",k:"livecode primera app hola mundo boton campo script codigo tutorial paso a paso empezar",
+  h:"<ol><li>Crea un nuevo stack (Archivo → Nuevo Stack).</li><li>Arrastra un <b>Button</b> y un <b>Field</b> (campo de texto) a la pantalla.</li><li>Con el botón en modo Editar, haz doble clic para abrir su <b>Script</b> (editor de código).</li><li>Escribe:</li></ol><pre style='overflow-x:auto'>on mouseUp\n  put &quot;Hola, mundo&quot; into field 1\nend mouseUp</pre><ol start='5'><li>Dale Aplicar, cambia al modo Ejecutar y toca el botón: el texto aparece en el campo. 🎉</li></ol>"},
+ {t:"LiveCode: código básico (variables, si, repetir)",c:"LiveCode",k:"livecode codigo variables if repeat bucle answer ask condicional lenguaje sintaxis calculadora",
+  h:"<p>Los scripts se escriben dentro de un evento (<b>on mouseUp</b> = al tocar el botón).</p><pre style='overflow-x:auto'>on mouseUp\n  ask &quot;¿Cuántos años tienes?&quot;\n  put it into edad\n  if edad &gt;= 18 then\n    answer &quot;Eres mayor de edad&quot;\n  else\n    answer &quot;Eres menor de edad&quot;\n  end if\n  repeat with i = 1 to 3\n    put i &amp;&amp; &quot;&quot; after field 1\n  end repeat\nend mouseUp</pre><ul><li><b>put ... into</b>: guarda un valor en una variable o campo.</li><li><b>ask</b>: pregunta algo al usuario (la respuesta queda en <b>it</b>).</li><li><b>answer</b>: muestra un mensaje.</li><li><b>if / else</b>: decide. <b>repeat</b>: repite.</li><li>Ejemplo de calculadora: <b>put field 1 + field 2 into field 3</b></li></ul>"},
+ {t:"Total Commander: primeros pasos",c:"Primeros pasos",k:"total commander archivos administrador carpetas copiar mover todos los archivos permiso android explorador",
+  h:"<ol><li>Instala <b>Total Commander</b> (en el celular, desde la tienda de aplicaciones) y ábrelo.</li><li>Te pedirá permiso para ver tus archivos. Toca donde dice <b>Todos los archivos</b> (o <i>Permitir acceso para administrar todos los archivos</i>) y activa el interruptor.</li><li>Regresa a la app con el botón Atrás.</li><li>Verás <b>dos paneles</b>, cada uno con una carpeta. Así puedes mover cosas de uno a otro.</li><li>Toca una carpeta para entrar. Toca <b>..</b> para subir un nivel.</li><li>Mantén presionado un archivo para seleccionarlo y elegir qué hacer: copiar, mover, borrar, renombrar o comprimir.</li><li>Para copiar: selecciona el archivo, toca <b>Copiar (F5)</b> y se copia a la carpeta del otro panel.</li><li>Para crear una carpeta usa el botón <b>Nueva carpeta (F7)</b>.</li></ol><p style='color:var(--mut)'>Los nombres de los botones pueden cambiar un poco según la versión.</p>"},
+ {t:"Excel: cómo empezar desde cero",c:"Primeros pasos",k:"excel empezar iniciar abrir libro en blanco guardar primeros pasos",
+  h:"<ol><li>Abre Excel (búscalo en Inicio o en tus aplicaciones).</li><li>Elige <b>Libro en blanco</b>.</li><li>Toca la celda <b>A1</b> y escribe un dato. <b>Enter</b> baja a la celda de abajo y <b>Tab</b> pasa a la derecha.</li><li>Escribe tus encabezados en la fila 1 y tus datos debajo.</li><li>Guarda: Archivo → Guardar como, ponle un nombre y elige el formato <b>.xlsx</b>.</li></ol>"},
+ {t:"Word: cómo empezar desde cero",c:"Primeros pasos",k:"word empezar iniciar abrir documento en blanco guardar pdf primeros pasos",
+  h:"<ol><li>Abre Word.</li><li>Elige <b>Documento en blanco</b>.</li><li>Escribe tu texto. Selecciónalo para cambiar fuente, tamaño y negrita en la pestaña <b>Inicio</b>.</li><li>Guarda con Archivo → Guardar como (o Ctrl+G).</li><li>Para sacar un PDF: Archivo → Exportar → Crear documento PDF.</li></ol>"},
+ {t:"PowerPoint: cómo empezar desde cero",c:"Primeros pasos",k:"powerpoint empezar iniciar abrir presentacion diapositivas primeros pasos",
+  h:"<ol><li>Abre PowerPoint.</li><li>Elige <b>Presentación en blanco</b> o un diseño que te guste.</li><li>Toca donde dice <b>Haga clic para agregar título</b> y escribe.</li><li>Añade más láminas con Inicio → <b>Nueva diapositiva</b>.</li><li>Pon imágenes con Insertar → Imágenes.</li><li>Para ver cómo queda, pulsa <b>F5</b> (presentación). Guarda con Ctrl+G.</li></ol>"},
+ {t:"Excel: funciones de texto",c:"Excel",k:"excel texto concatenar izquierda derecha mayusc minusc largo nompropio espacios extrae",
+  h:"<ul><li><b>=CONCATENAR(A1;&quot; &quot;;B1)</b> une textos (nombre y apellido).</li><li><b>=IZQUIERDA(A1;3)</b> y <b>=DERECHA(A1;3)</b> toman los primeros o últimos caracteres.</li><li><b>=MAYUSC()</b>, <b>=MINUSC()</b> y <b>=NOMPROPIO()</b> cambian las mayúsculas.</li><li><b>=LARGO(A1)</b> cuenta los caracteres.</li><li><b>=ESPACIOS(A1)</b> quita espacios sobrantes.</li></ul>"},
+ {t:"Excel: fechas y horas",c:"Excel",k:"excel fecha hora hoy ahora año mes dia dias calendario",
+  h:"<ul><li><b>=HOY()</b> fecha de hoy; <b>=AHORA()</b> fecha y hora.</li><li><b>=AÑO(A1)</b>, <b>=MES(A1)</b>, <b>=DIA(A1)</b> sacan una parte de la fecha.</li><li><b>=DIAS(B1;A1)</b> cuenta los días entre dos fechas.</li><li>Una fecha es en realidad un número: Excel cuenta los días desde 1900.</li></ul>"},
+ {t:"Excel: autorrelleno y series",c:"Excel",k:"excel autorrelleno serie arrastrar rellenar copiar ctrl e dias meses numeros",
+  h:"<ul><li>Escribe 1 y 2, selecciónalos y arrastra el cuadrito de la esquina: sigue la serie (3, 4, 5…).</li><li>También funciona con días de la semana y meses.</li><li>Doble clic en el cuadrito rellena hacia abajo hasta donde haya datos.</li><li><b>Ctrl+E</b> detecta un patrón y completa el resto (por ejemplo, separar nombres).</li></ul>"},
+ {t:"Excel: ajustar, inmovilizar y proteger",c:"Excel",k:"excel inmovilizar paneles proteger hoja ajustar texto combinar centrar ancho columna",
+  h:"<ul><li><b>Ancho de columna</b>: doble clic en el borde del encabezado para autoajustar.</li><li><b>Ajustar texto</b> y <b>Combinar y centrar</b>: en la pestaña Inicio.</li><li><b>Inmovilizar paneles</b>: Vista → Inmovilizar paneles; deja fija la fila de títulos al bajar.</li><li><b>Proteger hoja</b>: Revisar → Proteger hoja, para que no cambien tus fórmulas.</li></ul>"},
+ {t:"Excel: SI.ERROR y fórmulas sin errores",c:"Excel",k:"excel si.error error formulas buscarv no encontrado referencia circular",
+  h:"<p><b>=SI.ERROR(fórmula; valor_si_hay_error)</b> muestra un texto en vez de un error feo.</p><p>Ejemplo: <b>=SI.ERROR(BUSCARV(A2;Tabla;2;0);&quot;No encontrado&quot;)</b></p><p>Si Excel avisa de una <b>referencia circular</b>, una fórmula se está usando a sí misma: revisa que no incluya su propia celda.</p>"},
+ {t:"Python: tu primer programa",c:"Programación",k:"python programa print input variables if empezar codigo lenguaje",
+  h:"<p>Python es un lenguaje fácil de leer, muy usado en escuelas y en inteligencia artificial.</p><pre style='overflow-x:auto'>nombre = input(&quot;¿Cómo te llamas? &quot;)\nedad = int(input(&quot;Edad: &quot;))\nprint(&quot;Hola&quot;, nombre)\nif edad &gt;= 18:\n    print(&quot;Mayor de edad&quot;)\nelse:\n    print(&quot;Menor de edad&quot;)</pre><ul><li><b>print()</b> muestra, <b>input()</b> pregunta, <b>int()</b> convierte a número.</li><li>La sangría (espacios al inicio) es obligatoria.</li></ul>"},
+ {t:"Python: bucles y listas",c:"Programación",k:"python bucle for while lista range repetir arreglo",
+  h:"<pre style='overflow-x:auto'>for i in range(1, 6):\n    print(i)\n\nnotas = [80, 95, 70]\nsuma = 0\nfor n in notas:\n    suma = suma + n\nprint(suma / len(notas))\n\ncontador = 0\nwhile contador &lt; 3:\n    contador = contador + 1</pre><ul><li><b>for</b>: repite un número conocido de veces o recorre una lista.</li><li><b>while</b>: repite mientras se cumpla una condición.</li><li>Una <b>lista</b> guarda varios datos entre corchetes [ ].</li></ul>"},
+ {t:"Funciones y cómo corregir errores",c:"Programación",k:"funciones def return errores depurar debug sintaxis sangria programacion",
+  h:"<pre style='overflow-x:auto'>def area(base, altura):\n    return base * altura / 2\n\nprint(area(10, 4))</pre><ul><li>Una <b>función</b> es un bloque de código con nombre que puedes usar muchas veces.</li><li>Errores comunes: olvidar los dos puntos, mala sangría, escribir mal el nombre de una variable.</li><li>Lee el mensaje de error: dice la línea donde falló.</li><li>Prueba con <b>print()</b> para ver qué valor tiene cada variable.</li></ul>"},
+ {t:"Tipos de datos y operadores",c:"Programación",k:"tipos datos entero decimal texto booleano operadores comparacion logicos programacion",
+  h:"<ul><li><b>Entero</b> (7), <b>decimal</b> (3.5), <b>texto</b> (&quot;hola&quot;), <b>booleano</b> (verdadero/falso).</li><li>Aritméticos: + − * / y % (resto).</li><li>Comparación: == (igual), != (distinto), &lt;, &gt;, &lt;=, &gt;=.</li><li>Lógicos: <b>and</b> (y), <b>or</b> (o), <b>not</b> (no).</li></ul>"},
+ {t:"Unidades de memoria",c:"Fundamentos",k:"bit byte kb mb gb tb memoria almacenamiento unidades capacidad",
+  h:"<ul><li><b>Bit</b>: un 0 o un 1. <b>Byte</b>: 8 bits (una letra).</li><li><b>1 KB</b> = 1024 bytes.</li><li><b>1 MB</b> = 1024 KB.</li><li><b>1 GB</b> = 1024 MB.</li><li><b>1 TB</b> = 1024 GB.</li></ul><p>Una foto pesa unos MB; una película, unos GB.</p>"},
+ {t:"Sistemas operativos",c:"Fundamentos",k:"sistema operativo windows android linux macos ios drivers procesos",
+  h:"<p>El sistema operativo es el programa principal que controla el hardware y deja usar los demás programas.</p><ul><li>Ejemplos: <b>Windows</b>, <b>macOS</b>, <b>Linux</b>, <b>Android</b>, <b>iOS</b>.</li><li>Funciones: administrar archivos, memoria, procesos, dispositivos (drivers) y usuarios.</li></ul>"},
+ {t:"Redes e Internet",c:"Fundamentos",k:"redes internet ip router dns wifi http https servidor nube lan",
+  h:"<ul><li><b>Red</b>: computadoras conectadas entre sí. <b>Internet</b>: red de redes.</li><li><b>IP</b>: número que identifica a cada dispositivo.</li><li><b>Router</b>: reparte la conexión. <b>DNS</b>: traduce nombres de páginas a IP.</li><li><b>HTTPS</b>: conexión segura (el candadito).</li><li><b>Servidor</b>: computadora que guarda y entrega páginas o datos. <b>La nube</b>: servidores a los que accedes por Internet.</li></ul>"},
+ {t:"Periféricos de la computadora",c:"Fundamentos",k:"perifericos entrada salida almacenamiento teclado raton monitor impresora usb",
+  h:"<ul><li><b>Entrada</b>: teclado, ratón, micrófono, cámara, escáner.</li><li><b>Salida</b>: monitor, impresora, bocinas.</li><li><b>Almacenamiento</b>: disco duro, SSD, memoria USB.</li><li><b>Entrada y salida</b>: pantalla táctil, memoria USB.</li></ul>"},
+ {t:"Atajos útiles de Windows",c:"Fundamentos",k:"atajos windows teclado captura explorador escritorio bloquear administrador tareas",
+  h:"<ul><li><b>Win+E</b>: Explorador de archivos.</li><li><b>Win+D</b>: mostrar el escritorio.</li><li><b>Alt+Tab</b>: cambiar de programa.</li><li><b>Win+Mayús+S</b>: captura de pantalla.</li><li><b>Win+L</b>: bloquear la computadora.</li><li><b>Ctrl+Mayús+Esc</b>: Administrador de tareas.</li></ul>"},
+ {t:"Inteligencia artificial: qué es y cómo usarla bien",c:"Inteligencia artificial",k:"inteligencia artificial ia chatgpt claude asistente aprender estudiar modelos datos etica",
+  h:"<p>La IA son programas que aprenden patrones a partir de muchísimos datos y pueden escribir, explicar o analizar.</p><ul><li>Úsala para entender temas, practicar y pedir ejemplos.</li><li>Verifica lo que dice: puede equivocarse.</li><li>No copies y pegues sin entender: el objetivo es aprender.</li><li>No compartas datos personales ni contraseñas.</li></ul>"},
+ {t:"Copias de seguridad y antivirus",c:"Seguridad",k:"copia seguridad respaldo backup antivirus actualizar virus malware descargas",
+  h:"<ul><li><b>Respaldo</b>: guarda copias de tus archivos importantes en otro lugar (USB o nube).</li><li>Regla 3-2-1: 3 copias, en 2 tipos de medios, 1 fuera de casa.</li><li>Mantén el sistema y los programas <b>actualizados</b>.</li><li>Usa un antivirus y descarga solo de sitios oficiales.</li></ul>"},
+ {t:"HTML: estructura de una página",c:"Web",k:"html estructura head body title doctype pagina web etiquetas enlace imagen",
+  h:"<pre style='overflow-x:auto'>&lt;!DOCTYPE html&gt;\n&lt;html&gt;\n&lt;head&gt;\n  &lt;title&gt;Mi página&lt;/title&gt;\n&lt;/head&gt;\n&lt;body&gt;\n  &lt;h1&gt;Hola&lt;/h1&gt;\n  &lt;p&gt;Mi primera página.&lt;/p&gt;\n  &lt;a href='https://example.com'&gt;Enlace&lt;/a&gt;\n&lt;/body&gt;\n&lt;/html&gt;</pre><p><b>head</b>: información de la página. <b>body</b>: lo que se ve. Guárdalo como .html y ábrelo en el navegador.</p>"},
+ {t:"CSS básico: colores y estilos",c:"Web",k:"css estilos colores fuente selector propiedades diseno web",
+  h:"<pre style='overflow-x:auto'>h1 {\n  color: royalblue;\n  font-size: 32px;\n}\np {\n  background: #f0f0f0;\n}</pre><p>CSS dice <b>cómo se ve</b> cada etiqueta de HTML: color, tamaño, fondo, márgenes. Se escribe como selector { propiedad: valor; }.</p>"},
+ {t:"Word: tablas, imágenes e índice",c:"Word",k:"word tabla imagen indice numeracion pagina titulos estilos referencias",
+  h:"<ul><li><b>Tabla</b>: Insertar → Tabla.</li><li><b>Imagen</b>: Insertar → Imágenes.</li><li><b>Número de página</b>: Insertar → Número de página.</li><li><b>Índice automático</b>: aplica estilos de Título 1, 2 y 3 a tus títulos y luego Referencias → Tabla de contenido.</li></ul>"},
+ {t:"PowerPoint: diseño profesional",c:"PowerPoint",k:"powerpoint diseno profesional presentacion consejos fuentes colores animaciones",
+  h:"<ul><li>Una idea por diapositiva y pocas palabras.</li><li>Máximo dos tipos de letra y colores que contrasten.</li><li>Imágenes de buena calidad, no estiradas.</li><li>Animaciones sutiles, solo cuando ayuden.</li><li>Ensaya antes: la diapositiva apoya, tú explicas.</li></ul>"},
+ {t:"Microsoft Word: formato básico",c:"Word",k:"word documento texto formato fuente negrita margen",
+  h:"<p>Cambia fuente, tamaño, negrita y alineación en la pestaña Inicio. Usa Estilos para títulos y Diseño de página para márgenes. Guarda con Ctrl+G.</p>"},
+ {t:"PowerPoint: presentaciones",c:"PowerPoint",k:"powerpoint diapositivas presentacion slides animacion",
+  h:"<p>Pocas palabras por diapositiva, buen contraste y una idea por lámina. Insertar → Imagen para fotos; Transiciones para efectos.</p>"},
+ {t:"¿Qué es un algoritmo?",c:"Programación",k:"algoritmo programacion pasos logica diagrama flujo",
+  h:"<p>Una serie ordenada de pasos para resolver un problema. Se puede representar con diagramas de flujo o pseudocódigo: inicio, entrada, proceso, salida, fin.</p>"},
+ {t:"Variables y condicionales",c:"Programación",k:"variables si condicional if else bucle python programar",
+  h:"<p>Una variable guarda un dato (<b>edad = 17</b>). Un condicional decide: <b>si edad ≥ 18 → mayor, si no → menor</b>. Los bucles repiten acciones.</p>"},
+ {t:"Sistema binario",c:"Fundamentos",k:"binario bits bytes ceros unos numeros decimal",
+  h:"<p>Las computadoras usan solo 0 y 1. Cada posición vale una potencia de 2: 1,2,4,8,16… Ej: 1011 = 8+2+1 = 11.</p>"},
+ {t:"Hardware y software",c:"Fundamentos",k:"hardware software cpu ram disco memoria placa sistema operativo",
+  h:"<p>Hardware: partes físicas (CPU, RAM, disco). Software: programas e instrucciones (sistema operativo, aplicaciones).</p>"},
+ {t:"Seguridad: contraseñas",c:"Seguridad",k:"seguridad contraseña password virus phishing internet",
+  h:"<p>Usa contraseñas largas y distintas, no compartas claves y desconfía de enlaces sospechosos (phishing). Activa la verificación en dos pasos.</p>"},
+ {t:"HTML básico",c:"Web",k:"html web pagina etiquetas css internet sitio",
+  h:"<p>HTML estructura una página con etiquetas: <b>&lt;h1&gt;</b> título, <b>&lt;p&gt;</b> párrafo, <b>&lt;a&gt;</b> enlace. CSS les da estilo y color.</p>"}
+];
+const $=id=>document.getElementById(id);
+const COLS=["A","B","C","D"],NROWS=6;let SH={A1:"10",A2:"20",A3:"30",A4:"=SUMA(A1:A3)",B1:"Nota",B2:"=A2*2"};
+function val(id,seen){seen=seen||[];if(seen.includes(id))return NaN;const r=(SH[id]||"").trim();if(r==="")return 0;if(r[0]!=="=")return isNaN(r)?r:Number(r);
+  let e=r.slice(1).toUpperCase().replace(/;/g,",");if(!/^[0-9A-D+\-*\/().,:\sA-Z]*$/.test(e))return"#ERROR";
+  const rng=(a,b)=>{const o=[];for(let c=a.charCodeAt(0);c<=b.charCodeAt(0);c++)for(let n=+a.slice(1);n<=+b.slice(1);n++){const v=val(String.fromCharCode(c)+n,seen.concat(id));if(typeof v==="number")o.push(v)}return o};
+  e=e.replace(/([A-D])(\d+)(?::([A-D])(\d+))?/g,(m,a,b,c,d)=>c?`R("${a}${b}","${c}${d}")`:`V("${a}${b}")`);
+  try{const V=i=>{const v=val(i,seen.concat(id));return typeof v==="number"?v:0},R=rng,fl=a=>a.flat(),
+  SUMA=(...a)=>fl(a).reduce((s,x)=>s+x,0),PROMEDIO=(...a)=>{a=fl(a);return a.length?SUMA(a)/a.length:0},MAX=(...a)=>Math.max(...fl(a)),MIN=(...a)=>Math.min(...fl(a)),CONTAR=(...a)=>fl(a).length;
+  const x=new Function("V","R","SUMA","PROMEDIO","MAX","MIN","CONTAR","return ("+e+")")(V,R,SUMA,PROMEDIO,MAX,MIN,CONTAR);
+  return typeof x==="number"&&isFinite(x)?Math.round(x*1e6)/1e6:"#ERROR"}catch(er){return"#ERROR"}}
+function pintarHoja(){const t=$("sheet");let h="<tr><th></th>"+COLS.map(c=>`<th>${c}</th>`).join("")+"</tr>";
+  for(let n=1;n<=NROWS;n++){h+=`<tr><th>${n}</th>`+COLS.map(c=>`<td><input data-id="${c}${n}" inputmode="text" autocomplete="off"></td>`).join("")+"</tr>"}
+  t.innerHTML=h;refrescarHoja()}
+function refrescarHoja(){document.querySelectorAll("#sheet input").forEach(i=>{if(document.activeElement!==i)i.value=(SH[i.dataset.id]||"")[0]==="="?val(i.dataset.id):(SH[i.dataset.id]||"")})}
+document.addEventListener("focusin",e=>{if(e.target.dataset&&e.target.dataset.id)e.target.value=SH[e.target.dataset.id]||""});
+document.addEventListener("input",e=>{if(e.target.dataset&&e.target.dataset.id)SH[e.target.dataset.id]=e.target.value});
+document.addEventListener("focusout",e=>{if(e.target.dataset&&e.target.dataset.id)setTimeout(refrescarHoja,0)});
+$("limpiar").onclick=()=>{SH={};refrescarHoja()};
+$('salir2').onclick=()=>$('salir').onclick();
+$('verPw').onchange=e=>{$('pw').type=e.target.checked?'text':'password'};
+$('verPass').onchange=e=>{$('pass').type=e.target.checked?'text':'password'};
+let LISTA=[],DEST=null,AV=[];
+let RANK=[],SECC='reg',PREV='contenido';
+function miFoto(){try{return localStorage.getItem('inf11_foto')||''}catch(e){return ''}}
+function av(foto,nombre,s){const d=document.createElement('span');d.className='av';d.style.cssText='width:'+s+'px;height:'+s+'px;font-size:'+(s*.45)+'px';if(foto&&foto.startsWith('data:image/')){const i=document.createElement('img');i.src=foto;i.alt='';d.appendChild(i)}else d.textContent=(nombre||'?').trim().charAt(0).toUpperCase();return d}
+async function guardarRanking(add){const u=usuario();if(!u)return;let pts=0;try{pts=+localStorage.getItem('inf11_pts')||0}catch(e){}
+ if(db&&uid){const ref=db.collection('ranking').doc(uid);try{const s=await ref.get();const d=s.data&&s.data();if(d&&d.puntos>pts)pts=d.puntos}catch(e){}
+  pts+=add;try{localStorage.setItem('inf11_pts',pts)}catch(e){}
+  try{await ref.set({uid,nombre:u.nombre,aula:u.aula,puntos:pts,mejor:mejor(),foto:miFoto(),fecha:new Date().toISOString()})}catch(e){}
+  await cargarRanking()}else{pts+=add;try{localStorage.setItem('inf11_pts',pts)}catch(e){}}}
+async function cargarRanking(){if(!db)return;try{const s=await db.collection('ranking').get();const a=[];s.forEach(d=>a.push(d.data()));a.sort((x,y)=>(y.puntos-x.puntos)||String(x.fecha).localeCompare(String(y.fecha)));RANK=a}catch(e){}pintarTop1();pintarRank()}
+function pintarTop1(){const t=$('top1');if(!t)return;if(!RANK.length||SECC==='reg'){t.className='card top1 hidden';return}const r=RANK[0];t.className='card top1';t.innerHTML='';const s=document.createElement('span');s.textContent='👑 Top 1: '+r.nombre+' · '+r.puntos+' pts';t.append(av(r.foto,r.nombre,34),s)}
+function pintarRank(){const b=$('rank');if(!b)return;b.innerHTML='';if(!RANK.length){b.textContent='Aún nadie en el ranking. ¡Sé el primero! 🏁';return}const u=usuario()||{},med=['🥇','🥈','🥉'];RANK.slice(0,10).forEach((r,i)=>{const f=document.createElement('div');f.className='rk'+(r.nombre===u.nombre&&r.aula===u.aula?' yo':'');const p=document.createElement('b');p.textContent=med[i]||(i+1)+'.';const n=document.createElement('span');n.textContent=r.nombre+' (aula '+r.aula+')';n.style.flex='1';const pt=document.createElement('b');pt.textContent=r.puntos+' pts';f.append(p,av(r.foto,r.nombre,32),n,pt);b.appendChild(f)})}
+const subirFoto=e=>{const f=e.target.files[0];if(!f||!f.type.startsWith('image/'))return;const im=new Image(),url=URL.createObjectURL(f);im.onload=()=>{const c=document.createElement('canvas');c.width=c.height=96;const x=c.getContext('2d'),m=Math.min(im.width,im.height);x.drawImage(im,(im.width-m)/2,(im.height-m)/2,m,m,0,0,96,96);URL.revokeObjectURL(url);try{localStorage.setItem('inf11_foto',c.toDataURL('image/jpeg',.7))}catch(er){}pintarPerfil();guardarRanking(0)};im.src=url;e.target.value=''};
+$('fotoIn').onchange=subirFoto;$('fotoCam').onchange=subirFoto;
+function racha(){const hoy=new Date().toDateString(),ay=new Date(Date.now()-864e5).toDateString();let r={f:'',n:0};try{r=JSON.parse(localStorage.getItem('inf11_racha'))||r}catch(e){}if(r.f!==hoy){r.n=r.f===ay?r.n+1:1;r.f=hoy;try{localStorage.setItem('inf11_racha',JSON.stringify(r))}catch(e){}}return r.n}
+async function touch(){const u=usuario();if(!db||!uid||!u)return;try{await db.collection('registros').doc(uid).update({ultimo:new Date().toISOString(),racha:racha()})}catch(e){}}
+function visto(){try{return localStorage.getItem('inf11_visto')||''}catch(e){return ''}}
+function badge(){const n=AV.filter(a=>a.f>visto()).length,b=$('badge');b.textContent=n;b.classList.toggle('hidden',n===0)}
+async function cargarAvisos(){if(!db||!uid)return;revisarBan();try{const s=await db.collection('avisos').doc(uid).get();const d=s.data&&s.data();AV=(d&&d.lista)||[]}catch(e){AV=[]}badge()}
+function pintarAvisos(){const box=$('avList');box.innerHTML='';if(!AV.length){box.textContent='Aún no tienes notificaciones 🔕';return}AV.slice().reverse().forEach(a=>{const p=document.createElement('div');p.className='aviso';const t=document.createElement('div');t.textContent=a.t;const f=document.createElement('small');f.textContent=new Date(a.f).toLocaleString('es');p.append(t,f);box.appendChild(p)});try{localStorage.setItem('inf11_visto',AV[AV.length-1].f)}catch(e){}badge()}
+$('bellBtn').onclick=async e=>{e.stopPropagation();if(SECC==='avisos'){mostrar(PREV||'contenido');return}await cargarAvisos();pintarAvisos();mostrar('avisos')};
+$('menuBtn').onclick=e=>{e.stopPropagation();$('menu').classList.toggle('hidden')};
+document.addEventListener('click',()=>$('menu').classList.add('hidden'));
+document.querySelectorAll('#menu button').forEach(b=>b.onclick=()=>{if(b.dataset.v==='perfil')pintarPerfil();if(b.dataset.v==='juegos'){iniciarQuiz();cargarRanking()}if(b.dataset.v==='contenido'){CAT='';$('q').value='';pintar()}mostrar(b.dataset.v)});
+$('avBack').onclick=()=>mostrar(PREV||'contenido');
+function mejor(){try{return +localStorage.getItem('inf11_best')||0}catch(e){return 0}}
+function pintarPerfil(){const u=usuario()||{nombre:'',aula:''};$('pNom').textContent=u.nombre;$('pAula').textContent=u.aula;$('pBest').textContent=mejor()+' / 10';$('pRacha').textContent=racha()+' día(s)';$('pFotoBox').replaceChildren(av(miFoto(),u.nombre,84))}
+const PREG=[
+['¿Con qué símbolo empieza una fórmula en Excel?',['=','#','@','$'],0],
+['¿Qué función suma un rango de celdas?',['SUMA','PROMEDIO','CONTAR','HOY'],0],
+['¿Cómo se llama el cruce de una fila y una columna?',['Celda','Libro','Rango','Hoja'],0],
+['¿Qué tecla alterna entre referencia relativa y absoluta ($)?',['F2','F4','F5','F12'],1],
+['¿Qué extensión tiene un libro normal de Excel?',['.xlsx','.docx','.pptx','.pdf'],0],
+['¿Qué error sale al dividir entre cero?',['#¡DIV/0!','#¡REF!','#N/D','#¿NOMBRE?'],0],
+['¿Cómo se escribe el número 5 en binario?',['101','110','011','111'],0],
+['¿Qué es un algoritmo?',['Una serie ordenada de pasos para resolver un problema','Un tipo de virus','Una pieza de la computadora','Un programa para dibujar'],0],
+['¿Qué es el hardware?',['Las partes físicas de la computadora','Los programas instalados','Los archivos de internet','El sistema operativo'],0],
+['¿Qué lenguaje se usa para programar macros en Excel?',['VBA','HTML','SQL','C++'],0],
+['¿Qué etiqueta de HTML crea un enlace?',['<a>','<p>','<h1>','<br>'],0],
+['¿Qué atajo convierte un rango en tabla en Excel?',['Ctrl+T','Ctrl+P','Ctrl+K','Ctrl+Q'],0],
+['¿Qué es el phishing?',['Un engaño para robar tus datos con mensajes o enlaces falsos','Una marca de computadoras','Un tipo de memoria','Un lenguaje de programación'],0],
+['En LiveCode, ¿cómo se llama la ventana de tu aplicación?',['Stack','Libro','Hoja','Tabla'],0],
+['¿Qué función devuelve el valor más alto de un rango?',['MAX','MIN','SUMA','AHORA'],0],
+['¿Cuántos bytes tiene 1 KB (aproximadamente)?',['1024','100','10','1 000 000'],0],
+['¿Qué función une texto de varias celdas en Excel?',['CONCATENAR','SUMA','HOY','MAX'],0],
+['¿Qué devuelve la función HOY() en Excel?',['La fecha actual','La suma de días','El total de celdas','Un número al azar'],0],
+['¿Qué lenguaje da estilo (colores y fuentes) a una página web?',['CSS','SQL','VBA','C'],0],
+['¿Qué es una dirección IP?',['Un número que identifica un dispositivo en una red','Una marca de router','Un tipo de virus','Un programa de dibujo'],0],
+['En Python, ¿qué instrucción muestra un texto en pantalla?',['print()','show()','echo()','display()'],0]];
+let QZ=null;
+function mez(a){return a.slice().sort(()=>Math.random()-.5)}
+function iniciarQuiz(){QZ={sel:mez(PREG).slice(0,10).map(([q,o,a])=>{const m=mez(o);return{q,o:m,a:m.indexOf(o[a])}}),i:0,p:0};verPreg()}
+function verPreg(){const z=QZ,box=$('quiz');if(z.i>=10){return fin()}const p=z.sel[z.i];box.innerHTML='';
+ const h=document.createElement('p');h.style.color='var(--mut)';h.textContent='Pregunta '+(z.i+1)+' de 10 · Puntos: '+z.p;box.appendChild(h);
+ const t=document.createElement('h3');t.textContent=p.q;box.appendChild(t);
+ p.o.forEach((txt,k)=>{const b=document.createElement('button');b.className='opt';b.textContent=txt;b.onclick=()=>resp(k);box.appendChild(b)})}
+function resp(k){const z=QZ,p=z.sel[z.i],box=$('quiz'),bs=box.querySelectorAll('.opt');bs.forEach((b,j)=>{b.disabled=true;if(j===p.a)b.classList.add('ok');else if(j===k)b.classList.add('mal')});
+ if(k===p.a)z.p++;const n=document.createElement('button');n.textContent=z.i===9?'Ver resultado':'Siguiente →';n.onclick=()=>{z.i++;verPreg()};box.appendChild(n)}
+function fin(){const z=QZ,box=$('quiz');if(z.p>mejor()){try{localStorage.setItem('inf11_best',z.p)}catch(e){}}guardarRanking(z.p*10+(z.p===10?20:0));act({partidas:cont('inf11_partidas'),ultPartida:z.p,ultPartidaF:new Date().toISOString()});
+ const m=z.p===10?'¡Perfecto! 🏆 Eres un crack de la informática.':z.p>=8?'¡Excelente! 🔥':z.p>=5?'¡Bien! Sigue practicando 💪':'Repasa los temas de Información y vuelve a intentarlo 📚';
+ box.innerHTML='';const a=document.createElement('h3');a.textContent='Tu puntuación: '+z.p+' / 10';const b=document.createElement('p');b.textContent=m+' Tu mejor: '+mejor()+' / 10';
+ const r=document.createElement('button');r.textContent='Jugar otra vez';r.onclick=iniciarQuiz;box.append(a,b,r)}
+(function(){const s=['</>','{ }','01','10','#',';','λ','=>','&&','if','0xFF','[ ]','💾','🖥️','⌨️','🖱️','SQL','.js'];const d=document.createElement('div');d.id='deco';for(let i=0;i<14;i++){const e=document.createElement('span');e.textContent=s[i%s.length];e.style.cssText='left:'+Math.random()*92+'%;top:'+Math.random()*92+'%;font-size:'+(16+Math.random()*28)+'px;animation-delay:-'+Math.random()*10+'s;animation-duration:'+(8+Math.random()*10)+'s';d.appendChild(e)}document.body.prepend(d)})();
+pintarHoja();
+setTimeout(()=>{const l=$("loader");if(l)l.remove()},2800);
+const norm=s=>s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+let db=null,uid=null;
+
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+const ICON={Excel:'📊',Word:'📝',PowerPoint:'📽️',Programación:'💻',Fundamentos:'🧠',Seguridad:'🔐',Web:'🌐',LiveCode:'🛠️','Primeros pasos':'🚀','Inteligencia artificial':'🤖'};let CAT='';
+function pintar(){const q=norm($('q').value.trim()),L=$('lista');L.innerHTML='';
+ if(!q&&!CAT){const p=el('p',null,'Elige una categoría o usa la lupa 🔍');p.style.cssText='margin-top:0;color:var(--mut)';L.appendChild(p);const g=el('div','cats');[...new Set(TEMAS.map(x=>x.c))].forEach(c=>{const b=el('button','cat',(ICON[c]||'📁')+' '+c+' ('+TEMAS.filter(x=>x.c===c).length+')');b.onclick=()=>{CAT=c;pintar()};g.appendChild(b)});L.appendChild(g);return}
+ let r=TEMAS.filter(x=>norm(x.t+' '+x.c+' '+x.k).includes(q)||q.split(/\s+/).every(w=>norm(x.t+' '+x.k).includes(w)));
+ if(!q)r=r.filter(x=>x.c===CAT);
+ if(!q){const b=el('button','ghost','← Categorías');b.onclick=()=>{CAT='';pintar()};L.appendChild(b)}
+ const w=document.createElement('div');w.innerHTML=r.length?r.map(x=>`<details><summary>${x.t}<span class="tag">${x.c}</span></summary>${x.h}</details>`).join(''):"<p style='color:var(--mut)'>No encontré nada con esa búsqueda 🤔</p>";L.appendChild(w)}
+function mostrar(sec){["reg","contenido","admin","perfil","juegos","avisos","bienvenida"].forEach(s=>$(s).classList.toggle("hidden",s!==sec));$("menuBtn").classList.toggle("hidden",sec==="reg");$("bellBtn").classList.toggle("hidden",sec==="reg");$("menu").classList.add("hidden");if(sec==='avisos'&&SECC!=='avisos')PREV=SECC;SECC=sec;pintarTop1()}
+function entrar(u,nuevo){
+  $("hello").textContent="Hola, "+u.nombre+" · Aula "+u.aula+" 👋";racha();touch();
+  if(nuevo)$("bvTitulo").textContent="¡Bienvenido, "+u.nombre.split(" ")[0]+"!";revisarBan();mostrar(nuevo?"bienvenida":"contenido");pintar();
+}
+function usuario(){try{return JSON.parse(localStorage.getItem("inf11_user"))}catch(e){return null}}
+
+let modoLogin=false;
+const sha=async t=>[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t)))].map(b=>b.toString(16).padStart(2,"0")).join("");
+const getCuentas=()=>{try{return JSON.parse(localStorage.getItem("inf11_cuentas"))||{}}catch(e){return{}}};
+$("modo").onclick=()=>{modoLogin=!modoLogin;$("regTitulo").textContent=modoLogin?"Entra a tu cuenta":"Crea tu cuenta";$("regBtn").textContent=modoLogin?"Entrar":"Crear cuenta";$("modo").textContent=modoLogin?"Soy nuevo, crear cuenta":"Ya tengo cuenta";$("regErr").textContent="";["nom","aula","pw"].forEach(i=>$(i).value="");$("verPw").checked=false;$("pw").type="password";$("pw").setAttribute("autocomplete",modoLogin?"current-password":"new-password")};
+$("salir").onclick=()=>{try{localStorage.removeItem("inf11_user")}catch(e){}$("hello").textContent="Bienvenido al grupo";["nom","aula","pw"].forEach(i=>$(i).value="");$("verPw").checked=false;$("pw").type="password";$("regErr").textContent="";mostrar("reg")};
+$("regForm").onsubmit=async(ev)=>{ev.preventDefault();
+  const nombre=$("nom").value.trim(),aula=$("aula").value.trim();
+  const pw=$("pw").value;
+  if(nombre.length<3||!aula){$("regErr").textContent="Escribe tu nombre y el número del aula.";return}
+  if(!pw||(!modoLogin&&pw.length<4)){$("regErr").textContent=modoLogin?"Escribe tu contraseña.":"La contraseña debe tener mínimo 4 caracteres.";return}
+  const h=await sha(norm(nombre)+"|"+aula+"|"+pw);
+  const cuentas=getCuentas(),key=norm(nombre)+"|"+aula;
+  let existe=!!cuentas[key],hDb=null;
+  if(db&&uid){try{const d=await db.collection("registros").doc(uid).get();const x=d.data&&d.data();if(x&&norm(x.nombre||"")===norm(nombre)&&String(x.aula)===aula){existe=true;hDb=x.h}}catch(e){}}
+  if(modoLogin){
+    if(!existe){$("regErr").textContent="No existe una cuenta con estos datos. Toca «Soy nuevo, crear cuenta».";return}
+    if(cuentas[key]!==h&&hDb!==h){$("regErr").textContent="Contraseña incorrecta.";return}
+    try{localStorage.setItem("inf11_user",JSON.stringify({nombre,aula}))}catch(e){}
+    entrar({nombre,aula});return}
+  if(existe){$("regErr").textContent="Ya existe una cuenta con estos datos. Toca «Ya tengo cuenta».";return}
+  cuentas[key]=h;try{localStorage.setItem("inf11_cuentas",JSON.stringify(cuentas))}catch(e){}
+  const u={nombre,aula};
+  try{localStorage.setItem("inf11_user",JSON.stringify(u))}catch(e){}
+  try{if(db)await db.collection("registros").doc(uid||("anon"+Date.now())).set({...u,h,uid,ultimo:new Date().toISOString(),racha:racha(),fecha:new Date().toISOString()})}catch(e){}
+  entrar(u,true);
+};
+$("bvBtn").onclick=()=>mostrar("contenido");
+let tq=null;$("q").oninput=()=>{pintar();clearTimeout(tq);tq=setTimeout(()=>{const v=$("q").value.trim();if(v.length>=3)act({busquedas:cont('inf11_busq'),ultBusq:v.slice(0,60),ultBusqF:new Date().toISOString()})},1500)};
+$("admBtn").onclick=()=>mostrar("admin");
+$("back").onclick=()=>{const u=usuario();u?entrar(u):mostrar("reg")};
+function cont(k){let n=0;try{n=(+localStorage.getItem(k)||0)+1;localStorage.setItem(k,n)}catch(e){n=1}return n}
+async function act(o){if(!db||!uid)return;try{await db.collection('registros').doc(uid).update(o)}catch(e){}}
+async function revisarBan(){if(!db||!uid)return;try{const d=await db.collection('bloqueados').doc(uid).get();const x=d.data&&d.data();if(x&&x.f){try{localStorage.removeItem('inf11_user')}catch(e){}$('baneado').classList.remove('hidden')}}catch(e){}}
+let ADM=[],BANS={},TAB='resumen',AMSG='';
+const fmt=t=>{if(!t)return '—';const d=new Date(t);return d.toLocaleDateString('es',{day:'numeric',month:'short'})+' '+d.toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'})};
+const fotoDe=r=>{const k=RANK.find(x=>x.uid===r.uid||(x.nombre===r.nombre&&x.aula===r.aula));return k?k.foto:''};
+async function enviarTexto(r,t){const ref=db.collection('avisos').doc(r.uid);let l=[];try{const s=await ref.get();const d=s.data&&s.data();if(d&&d.lista)l=d.lista}catch(e){}l.push({t,f:new Date().toISOString()});await ref.set({lista:l.slice(-30)})}
+async function cargarAdmin(){AMSG='';
+ if(!db){AMSG='La base de datos no está disponible ahora.';pintarAdmin();return}
+ try{const s=await db.collection('registros').get();const a=[];s.forEach(d=>{const x=d.data();x.uid=x.uid||d.id;a.push(x)});a.sort((x,y)=>String(y.ultimo||'').localeCompare(String(x.ultimo||'')));ADM=a}catch(e){ADM=[];AMSG='No se pudieron leer los datos. Revisa la configuración de Firebase y las reglas.'}
+ try{const s=await db.collection('bloqueados').get();BANS={};s.forEach(d=>{BANS[d.id]=1})}catch(e){}
+ await cargarRanking();pintarAdmin()}
+function pintarAdmin(){const b=$('aBody');b.innerHTML='';if(AMSG)b.appendChild(el('p','err',AMSG));
+ if(TAB==='resumen'){const hoy=new Date().toDateString(),sum=k=>ADM.reduce((t,r)=>t+(+r[k]||0),0);
+  const it=[['👥',ADM.length,'Registrados'],['🟢',ADM.filter(r=>r.ultimo&&new Date(r.ultimo).toDateString()===hoy).length,'Activos hoy'],['🎮',ADM.filter(r=>r.partidas>0).length,'Han jugado'],['🔍',ADM.filter(r=>r.busquedas>0).length,'Han buscado'],['🏁',sum('partidas'),'Partidas totales'],['💬',sum('busquedas'),'Búsquedas totales'],['🚫',Object.keys(BANS).length,'Expulsados'],['👑',RANK[0]?RANK[0].nombre:'—','Top 1']];
+  const g=el('div','stats');it.forEach(([i,v,t])=>{const c=el('div','stat'),n=el('b',null,i+' '+v);if(String(v).length>8)n.style.fontSize='1.1rem';c.append(n,el('span',null,t));g.appendChild(c)});b.appendChild(g);
+  b.appendChild(el('h3',null,'🆕 Miembros recientes'));
+  ADM.slice().sort((x,y)=>String(y.fecha||'').localeCompare(String(x.fecha||''))).slice(0,5).forEach(r=>{const f=el('div','feed',r.nombre+' · aula '+r.aula);f.appendChild(el('small',null,'Se unió: '+fmt(r.fecha)));b.appendChild(f)});
+  if(!ADM.length)b.appendChild(el('p',null,'Aún no hay miembros.'))}
+ else if(TAB==='actividad'){const ev=[];ADM.forEach(r=>{if(r.fecha)ev.push([r.fecha,'🆕 '+r.nombre+' (aula '+r.aula+') se unió a la página']);if(r.ultPartidaF)ev.push([r.ultPartidaF,'🎮 '+r.nombre+' jugó y sacó '+r.ultPartida+'/10']);if(r.ultBusqF)ev.push([r.ultBusqF,'🔍 '+r.nombre+' buscó «'+r.ultBusq+'»'])});
+  ev.sort((x,y)=>String(y[0]).localeCompare(String(x[0])));b.appendChild(el('h3',null,'🔔 Actividad reciente'));
+  if(!ev.length)b.appendChild(el('p',null,'Sin actividad todavía.'));ev.slice(0,40).forEach(([t,x])=>{const f=el('div','feed',x);f.appendChild(el('small',null,fmt(t)));b.appendChild(f)})}
+ else if(TAB==='miembros'){const bt=el('button',null,'✉️ Enviar a todos');bt.style.marginBottom='12px';bt.onclick=()=>abrirSheet(null);b.appendChild(bt);
+  if(!ADM.length)b.appendChild(el('p',null,'Aún no hay miembros.'));
+  ADM.forEach(r=>{const m=el('div','mem'),inf=el('div');inf.style.flex='1';inf.appendChild(el('b',null,r.nombre));const d=el('div',null,'Aula '+r.aula+' · '+fmt(r.ultimo));d.style.cssText='color:var(--mut);font-size:.85rem';inf.appendChild(d);m.append(av(fotoDe(r),r.nombre,42),inf);if(BANS[r.uid])m.appendChild(el('span',null,'🚫'));m.onclick=()=>abrirSheet(r);b.appendChild(m)})}
+ else{const c=el('div','card');c.style.textAlign='center';c.append(av('','Erick',84),el('h2',null,'Erick · #13'),el('p',null,'👑 Administrador de Informática 11no grado'),el('p',null,'Miembros: '+ADM.length+' · Expulsados: '+Object.keys(BANS).length));const cl=el('button','ghost','Cerrar panel');cl.onclick=()=>$('aSalir').onclick();c.appendChild(cl);b.appendChild(c)}}
+function abrirSheet(r){const sh=$('aSheet');sh.innerHTML='';sh.classList.remove('hidden');sh.onclick=e=>{if(e.target===sh)sh.classList.add('hidden')};
+ const bx=el('div','sheet2');sh.appendChild(bx);const est=el('div','err');est.style.color='var(--mut)';
+ const comp=el('div'),ta=document.createElement('textarea');ta.placeholder='Escribe el mensaje…';comp.appendChild(ta);
+ ['🔥 ¡Estás perdiendo tu racha!','🎮 Juega y responde las 10 preguntas','🔍 Busca y aprende algo nuevo hoy'].forEach(t=>{const x=el('button','ghost sug',t);x.onclick=()=>{ta.value=t.replace(/^\S+\s/,'')};comp.appendChild(x)});
+ const send=el('button',null,'Enviar');send.style.marginTop='8px';
+ send.onclick=async()=>{const t=ta.value.trim();if(!t){est.textContent='Escribe el mensaje.';return}const dest=r?[r]:ADM.filter(x=>!BANS[x.uid]);let n=0;for(const x of dest){try{await enviarTexto(x,t);n++}catch(e){}}est.textContent=n?'✅ Enviado a '+n+' miembro(s)':'No se pudo enviar.';if(n)ta.value=''};
+ comp.appendChild(send);
+ if(!r){bx.append(el('h3',null,'✉️ Enviar a todos'),comp,est)}
+ else{const first=r.nombre.split(' ')[0],h=el('div');h.style.cssText='display:flex;gap:10px;align-items:center;margin-bottom:8px';const t=el('div');t.append(el('b',null,r.nombre),el('div',null,'Aula '+r.aula+(BANS[r.uid]?' · 🚫 expulsado':'')));h.append(av(fotoDe(r),r.nombre,48),t);bx.appendChild(h);
+  const st=el('p',null,'Última entrada: '+fmt(r.ultimo)+' · 🎮 '+(r.partidas||0)+' partidas · 🔍 '+(r.busquedas||0)+' búsquedas · 🔥 racha '+(r.racha||0));st.style.cssText='color:var(--mut);font-size:.9rem';bx.appendChild(st);
+  const fel=el('button','act','🎉 Felicitar');fel.onclick=async()=>{try{await enviarTexto(r,'🎉 ¡Felicidades, '+first+'! Vas muy bien, sigue así.');est.textContent='✅ Felicitación enviada'}catch(e){est.textContent='No se pudo enviar.'}};
+  const ms=el('button','act','💬 Mandar mensaje');ms.onclick=()=>comp.classList.toggle('hidden');
+  const rc=el('button','act','🔥 Recordar su racha');rc.onclick=async()=>{try{await enviarTexto(r,'🔥 ¡Estás perdiendo tu racha, '+first+'! Entra hoy y juega.');est.textContent='✅ Recordatorio enviado'}catch(e){est.textContent='No se pudo enviar.'}};
+  const ban=el('button','act red',BANS[r.uid]?'♻️ Readmitir en la página':'🚫 Expulsar de la página');let ask=false;
+  ban.onclick=async()=>{if(!ask){ask=true;ban.textContent='⚠️ Toca otra vez para confirmar';return}
+   try{if(BANS[r.uid]){await db.collection('bloqueados').doc(r.uid).delete();delete BANS[r.uid]}else{await db.collection('bloqueados').doc(r.uid).set({f:new Date().toISOString(),nombre:r.nombre});BANS[r.uid]=1;try{await db.collection('ranking').doc(r.uid).delete()}catch(e){}RANK=RANK.filter(x=>x.uid!==r.uid)}sh.classList.add('hidden');pintarAdmin()}catch(e){est.textContent='No se pudo completar.';ask=false}};
+  comp.classList.add('hidden');bx.append(fel,ms,comp,rc,ban,est)}
+ const cr=el('button','ghost','Cerrar');cr.style.marginTop='10px';cr.onclick=()=>sh.classList.add('hidden');bx.appendChild(cr)}
+function marcarTab(){document.querySelectorAll('.atabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===TAB))}
+document.querySelectorAll('.atabs button').forEach(b=>b.onclick=()=>{TAB=b.dataset.t;marcarTab();pintarAdmin()});
+$('passBtn').onclick=async()=>{if(!(await loginAdmin($('pass').value))){$('passErr').textContent='Contraseña incorrecta.';return}$('passErr').textContent='';$('pass').value='';$('adminApp').classList.remove('hidden');TAB='resumen';marcarTab();AMSG='Cargando…';pintarAdmin();cargarAdmin()};
+$('aSalir').onclick=async()=>{if(FBA&&DBUSER){db=DBUSER;DBUSER=null;try{await FBA.auth.signOut()}catch(e){}}$('adminApp').classList.add('hidden');$('aSheet').classList.add('hidden');const u=usuario();u?entrar(u):mostrar('reg')};
+(async()=>{
+  try{localStorage.removeItem("inf11_user")}catch(e){}
+  try{await iniciarDB()}catch(e){}
+  cargarAvisos();setInterval(cargarAvisos,30000);touch();cargarRanking();setInterval(cargarRanking,30000);
+})();
+</script>
+</body>
+</html>
